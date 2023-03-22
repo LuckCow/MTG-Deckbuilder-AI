@@ -97,6 +97,8 @@ class MTGStandardEncoder:
                     sideboard.append((count, card))
                 else:
                     deck.append((count, card))
+        # store the last deck
+        decks.append((deck, sideboard))
 
         # convert decks to encodings
         enc_decks = []

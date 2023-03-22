@@ -5,8 +5,12 @@ import torch
 from src.encoding import MTGStandardEncoder
 
 enc = MTGStandardEncoder()
-mtgDeckGenerator = model.MTGDeckGenerator()
 device = model.device
+
+mtgDeckGenerator = model.MTGDeckGenerator()
+load_path = 'model.pt'
+if load_path:
+    mtgDeckGenerator.load_state_dict(torch.load(load_path))
 
 # print the number of parameters in the model
 print(sum(p.numel() for p in mtgDeckGenerator.parameters()), ' parameters')
@@ -77,6 +81,9 @@ for iter in range(max_iters):
     mtgDeckGenerator.optimizer.zero_grad(set_to_none=True)
     loss.backward()
     mtgDeckGenerator.optimizer.step()
+
+# save the model
+torch.save(mtgDeckGenerator.state_dict(), 'model2.pt')
 
 # generate from the model
 context = torch.zeros((1, 60), dtype=torch.long, device=device)

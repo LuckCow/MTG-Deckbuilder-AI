@@ -47,7 +47,26 @@ class MTGStandardEncoder:
         return len(self.cards)
 
     def decode_deck(self, encoded_deck):
-        return [self.decode(card) for card in encoded_deck]
+        """ convert a list of indexes to a standard deck format string """
+        # count the number of occurrences of each card id
+        card_counts = {}
+        for card_id in encoded_deck:
+            if card_id in card_counts:
+                card_counts[card_id] += 1
+            else:
+                card_counts[card_id] = 1
+
+        # convert card id to card name
+        deck = []
+        for card_id, count in card_counts.items():
+            deck.append((count, self.decode(card_id)))
+
+        deck.sort(key=lambda x: x[1])  # sort by card name
+        deck_str = 'Deck\n'
+        for count, card in deck:
+            deck_str += '{} {}\n'.format(count, card)
+
+        return deck_str
 
 
 

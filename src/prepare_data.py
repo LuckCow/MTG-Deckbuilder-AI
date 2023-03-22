@@ -68,7 +68,7 @@ for deck in enc_decks:
         shuffled_deck = deck.copy()
         random.shuffle(shuffled_deck)
         removed_cards = []
-        for i in range(deck_size - 1, -1, -1):
+        for i in range(deck_size - 1, -1, -1):  # blank cards are at the end
             removed_cards.append(shuffled_deck[i])
             shuffled_deck[i] = 0
 

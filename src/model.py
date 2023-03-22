@@ -67,7 +67,7 @@ class MultiHeadAttention(nn.Module):
         return out
 
 class FeedFoward(nn.Module):
-    """ a simple linear layer followed by a non-linearity """
+    """ a simple linear layer followed by a non-linearity and dropout """
 
     def __init__(self, n_embd):
         super().__init__()
@@ -97,6 +97,7 @@ class Block(nn.Module):
         x = x + self.sa(self.ln1(x))
         x = x + self.ffwd(self.ln2(x))
         return x
+
 class MTGDeckGenerator(nn.Module):
     def __init__(self):
         super().__init__()
@@ -143,17 +144,30 @@ class MTGDeckGenerator(nn.Module):
         # idx is (B, T) array of indices in the current context
         # T is the deck size of 60 cards, containing an arbitrary number of placeholder tokens (0) which will
         # be iteratively replaced by cards recommended by the model
+
+        # first, sort the deck so that blank cards are at the end
+        # sort idx by number in each B dimension
+        idx, _ = idx.sort(1, True)
+
         for _ in range(max_new_tokens):
-            # crop idx to the last block_size tokens
-            idx_cond = idx[:, -block_size:]  # TODO: remove this
+            # find first index of placeholder token (0) in each B dimension
+            matches = (idx[0] == 0).nonzero()  # TODO: do for all batches
+            if matches.size(0) == 0:
+                # no placeholder tokens, so we can't generate any more cards
+                return idx
+            else:
+                # get the index of the first placeholder token
+                first_blank_idx = matches[0].item()
+
             # get the predictions
-            logits, loss = self(idx_cond)
+            logits, loss = self(idx)
             # focus only on the last time step
             logits = logits[:, -1, :] # becomes (B, C)
             # apply softmax to get probabilities
             probs = F.softmax(logits, dim=-1) # (B, C)
             # sample from the distribution
             idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
-            # append sampled index to the running sequence
-            idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
+
+            # append sampled card into next blank slot
+            idx = torch.cat([idx[:, :first_blank_idx], idx_next, idx[:, first_blank_idx+1:]], dim=1)
         return idx

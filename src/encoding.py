@@ -3,6 +3,7 @@ Convert card pool to indexes, so they can be encoded by the neural network
 """
 
 import json
+import re
 
 class MTGStandardEncoder:
     """"""
@@ -68,6 +69,53 @@ class MTGStandardEncoder:
 
         return deck_str
 
+    def encode_decks(self, deck_str):
+        """ convert a standard deck format string to a list of encoded decks """
+        # Parse text into decks
+        is_sideboard = False
+        decks = []
+        deck, sideboard = [], []
+        for line in deck_str.splitlines():
+            # Start a new deck
+            if line == 'Deck':
+                if deck:
+                    decks.append((deck, sideboard))
+                is_sideboard = False
+                deck = []
+                sideboard = []
+            elif line == 'Sideboard':
+                is_sideboard = True
+            elif line == '':
+                pass
+            else:
+                # card lines always follow r'(\d+) (.*)' where g1 is counts and g2 is the card name
+                match = re.match(r'(\d+) (.*)', line)
+                count = int(match.group(1))
+                card = match.group(2)
+
+                if is_sideboard:
+                    sideboard.append((count, card))
+                else:
+                    deck.append((count, card))
+
+        # convert decks to encodings
+        enc_decks = []
+        for deck, sideboard in decks:
+            # ignore sideboard for now
+            enc_deck = []
+            for count, card in deck:
+                enc_deck.extend([self.encode(card)] * count)
+
+            if len(enc_deck) == 60:
+                enc_decks.append(enc_deck)
+            elif len(enc_deck) > 60:
+                print('Throwing out deck with {} cards'.format(len(enc_deck)))
+            elif len(enc_deck) < 60:
+                # pad deck with blank cards
+                enc_deck.extend([0] * (60 - len(enc_deck)))
+                enc_decks.append(enc_deck)
+
+        return enc_decks
 
 
 

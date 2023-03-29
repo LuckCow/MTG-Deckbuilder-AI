@@ -8,7 +8,7 @@ enc = MTGStandardEncoder()
 device = model.device
 
 mtgDeckGenerator = model.MTGDeckGenerator()
-load_path = 'model.pt'
+load_path = ''
 if load_path:
     mtgDeckGenerator.load_state_dict(torch.load(load_path))
 
@@ -16,10 +16,6 @@ if load_path:
 print(sum(p.numel() for p in mtgDeckGenerator.parameters()), ' parameters')
 
 # load the data, should be (7290, 60) and (7290, 1882)
-# train_inputs = np.fromfile('../data/train_inputs.bin', dtype=np.uint16)
-# train_values = np.fromfile('../data/train_values.bin', dtype=np.uint16)
-# val_inputs = np.fromfile('../data/val_inputs.bin', dtype=np.uint16)
-# val_values = np.fromfile('../data/val_values.bin', dtype=np.uint16)
 train_inputs = np.load('../data/train_inputs.npy')
 train_values = np.load('../data/train_values.npy')
 val_inputs = np.load('../data/val_inputs.npy')
@@ -27,8 +23,8 @@ val_values = np.load('../data/val_values.npy')
 
 print(train_inputs.shape, train_values.shape)
 
-batch_size = 8
-max_iters = 1000
+batch_size = 16
+max_iters = 5000
 eval_interval = max_iters // 10
 eval_iters = 200
 
@@ -83,7 +79,7 @@ for iter in range(max_iters):
     mtgDeckGenerator.optimizer.step()
 
 # save the model
-torch.save(mtgDeckGenerator.state_dict(), 'model2.pt')
+torch.save(mtgDeckGenerator.state_dict(), 'model2_a1.pt')
 
 # generate from the model
 context = torch.zeros((1, 60), dtype=torch.long, device=device)

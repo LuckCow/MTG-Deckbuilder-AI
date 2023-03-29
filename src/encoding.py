@@ -35,6 +35,10 @@ class MTGStandardEncoder:
             if '//' in card:
                 self.card_to_index[card.split('//')[0].strip()] = i
 
+        # store list of cards that are not limited to 4 copies
+        self.unlimited_cards = ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest']
+        self.unlimited_cards_indices = [self.encode(card) for card in self.unlimited_cards]
+
 
     def encode(self, card):
         """ convert card name to index """
@@ -118,6 +122,13 @@ class MTGStandardEncoder:
                 enc_decks.append(enc_deck)
 
         return enc_decks
+
+    def is_legal_addition(self, card_id, num_copies):
+        """ Check if adding a card to a deck is legal """
+        if card_id in self.unlimited_cards_indices:
+            return True
+        else:
+            return num_copies <= 4
 
 
 

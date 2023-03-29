@@ -81,7 +81,17 @@ class MTGDeckGenerator(nn.Module):
             # apply softmax to get probabilities
             probs = F.softmax(logits, dim=-1) # (B, C)
             # sample from the distribution
-            idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
+            idx_nexts = torch.multinomial(probs, num_samples=20, replacement=False) # (B, 1)
+
+            # find the first card that is legal to add to the deck
+            for idx_next in idx_nexts[0]:
+                next_counts = len((idx[0] == idx_next).nonzero()) + 1
+                if enc.is_legal_addition(idx_next.item(), next_counts):
+                    # wrap back into (1, 1) tensor
+                    idx_next = idx_next.unsqueeze(0).unsqueeze(0)
+                    break
+            else:
+                raise ValueError("Could not find a legal card to add to the deck from first 20 samples")
 
             # append sampled card into next blank slot
             idx = torch.cat([idx[:, :first_blank_idx], idx_next, idx[:, first_blank_idx+1:]], dim=1)

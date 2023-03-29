@@ -37,7 +37,7 @@ for deck in enc_decks:
             values_dist = np.zeros(len(encoder))
             for card in removed_cards:
                 values_dist[card] += 1
-            values_dist /= len(removed_cards)
+            #values_dist /= len(removed_cards)  # cross entropy takes counts not probabilities
 
             # store training inputs/values
             inputs.append(shuffled_deck.copy())
@@ -64,8 +64,8 @@ val_inputs = np.array(val_inputs, dtype=np.uint16)
 np.save('../data/train_inputs.npy', train_inputs)
 np.save('../data/val_inputs.npy', val_inputs)
 
-train_values = np.array(train_values, dtype=np.float32)
-val_values = np.array(val_values, dtype=np.float32)
+train_values = np.array(train_values, dtype=np.uint16)
+val_values = np.array(val_values, dtype=np.uint16)
 # train_values.tofile('../data/train_values.bin')
 # val_values.tofile('../data/val_values.bin')
 np.save('../data/train_values.npy', train_values)

@@ -2,16 +2,18 @@
 Transformer Based Neural Network trained to generate deck lists for the card game Magic the Gathering
 
 ## Overview
-In order to represent cards, an encoding scheme was created. The encoding is a 1xN vector where N is the number of cards in the game plus a placeholder token for a missing card (1882). Each index represents a unique card and the cards are represented by 1-hot vectors, meaning that the index of the card is 1 and all other indices are 0. 
-The dataset consists of a list of 46 top performing decks in the standard format from recent tournaments.
-These deck lists were used to create many training examples. The deck is shuffled, and then one card is removed at a time. Each iteration of this produces a training input-target pair. The input is the remaining cards in the deck and the output is a single vector 1882 length vector with the counts of each removed card in their corresponding index in order to represent the probability of which card should be added next.
+The cards are represented by an encoding which is a 1xN vector where N is the number of cards in the game plus a placeholder token for a missing card (1882). Each index represents a unique card and the cards are represented by 1-hot vectors, meaning that the index of the card is 1 and all other indices are 0. 
+
+The dataset consists of a list of 46 top performing decks in the standard format from recent tournaments. These deck lists were used to create many training examples. The deck is shuffled, and then one card is removed at a time. Each iteration of this produces a training input-target pair. The input is the remaining cards in the deck and the output is a single vector 1882 length vector with the counts of each removed card in their corresponding index in order to represent the probability of which card should be added next.
+
 The network itself consists of an encoder layer to convert the 1-hot card representation into an embedding space. Then, it is fed through a transformer encoder layer to understand the structure and relationship between the cards. Finally, that memory is decoded by a single linear layer to represent the probability of each potential card to add next. This can then be sampled from to finish out a deck from any starting point.
 
 Figure: Example of the probability distribution for selecting the next card at one step of generation.
-![selection_dist1.png](selection_dist1.png)
+![selection_dist1.png](img%2Fselection_dist1.png)
 
 ## Example Output
 (https://www.moxfield.com/decks/8RqO8KlOhkOgCmiVHAiUjQ)
+```
 Deck
 2 Atraxa, Grand Unifier
 4 Blackcleave Cliffs
@@ -43,4 +45,5 @@ Deck
 1 Thalia, Guardian of Thraben
 1 The Cruelty of Gix
 2 Xander's Lounge
+```
 
